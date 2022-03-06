@@ -47,7 +47,6 @@ fn convert_node(node: usvg::Node) -> Option<Ref<ffi::IScriptable>> {
         usvg::NodeKind::ClipPath(_) => None,
         usvg::NodeKind::Mask(_) => None,
         usvg::NodeKind::Pattern(_) => None,
-        usvg::NodeKind::Filter(_) => None,
         usvg::NodeKind::Path(path) => Some(convert_path(path)),
         usvg::NodeKind::Image(_) => None,
         usvg::NodeKind::Group(group) => {
