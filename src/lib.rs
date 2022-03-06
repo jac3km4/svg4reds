@@ -1,5 +1,5 @@
 use std::iter::Peekable;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use red4ext_rs::interop::IsoRED;
 use red4ext_rs::prelude::*;
@@ -209,18 +209,25 @@ fn render_bezier(
     vertices
 }
 
-fn get_svg_path(name: &str) -> Option<PathBuf> {
+fn get_svg_path(path: &str) -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
-    let path: &Path = name.as_ref();
-    let path = exe
-        .parent()?
-        .parent()?
-        .parent()?
-        .join("r6")
-        .join("svg")
-        .join(path.file_name()?)
-        .with_extension("svg");
-    Some(path)
+    let path: &Path = path.as_ref();
+    if path
+        .components()
+        .all(|c| matches!(c, Component::Normal(_) | Component::CurDir))
+    {
+        let path = exe
+            .parent()?
+            .parent()?
+            .parent()?
+            .join("r6")
+            .join("svg")
+            .join(path)
+            .with_extension("svg");
+        Some(path)
+    } else {
+        None
+    }
 }
 
 #[derive(Debug)]
