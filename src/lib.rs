@@ -169,16 +169,19 @@ fn extract_vertices<'a, I: Iterator<Item = &'a usvg::PathSegment>>(
                 y,
             } => {
                 if let Some(start) = vertices.last().cloned() {
-                    vertices.extend(render_bezier(
+                    let curve = render_bezier(
                         PointN::new([start.x as f64, start.y as f64]),
                         PointN::new([*x1, *y1]),
                         PointN::new([*x2, *y2]),
                         PointN::new([*x, *y]),
-                    ));
-                    vertices.push(Vector2::new(*x as f32, *y as f32));
+                    );
+                    vertices.extend(curve.into_iter().skip(1));
                 }
             }
             usvg::PathSegment::ClosePath => {
+                if !vertices.is_empty() && vertices.first() == vertices.last() {
+                    vertices.pop();
+                }
                 return VerticeSet::closed(vertices);
             }
             usvg::PathSegment::MoveTo { .. } => return VerticeSet::open(vertices),
@@ -193,7 +196,7 @@ fn render_bezier(
     ctrl2: PointN<f64, 2>,
     end: PointN<f64, 2>,
 ) -> Vec<Vector2> {
-    const BEZIER_STEPS: usize = 64;
+    const BEZIER_STEPS: usize = 12;
     let mut vertices = Vec::with_capacity(BEZIER_STEPS);
 
     let bezier = CubicBezier::new(start, ctrl1, ctrl2, end);
@@ -242,7 +245,7 @@ impl VerticeSet {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 #[repr(C)]
 struct Vector2 {
     x: f32,
