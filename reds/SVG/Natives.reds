@@ -216,11 +216,6 @@ public func SetVertexList(vertexList: array<Vector2>) {
     this.vertexList = vertexList;
 }
 
-@addMethod(inkShape)
-public func AddVertex(vertex: Vector2) {
-    ArrayPush(this.vertexList, vertex);
-}
-
 // inkCanvas
 
 @addMethod(inkCanvas)

@@ -75,16 +75,14 @@ fn convert_path(path: &usvg::Path) -> Ref<ffi::IScriptable> {
     let (sx, sy) = path.transform.get_scale();
     let visible = path.visibility == usvg::Visibility::Visible;
 
-    call!(canv, "SetTranslation" (tx as f32, ty as f32) -> ());
+    call!(canv, "SetTranslation" (Vector2::new(tx as f32, ty as f32)) -> ());
     call!(canv, "SetScale" (Vector2::new(sx as f32, sy as f32)) -> ());
     call!(canv, "SetVisible" (visible) -> ());
 
     while it.len() > 0 {
         let set = extract_vertices(&mut it);
         let shape = create_shape(path, set.is_closed);
-        for vert in set.vertices {
-            call!(shape, "AddVertex" (vert) -> ());
-        }
+        call!(shape, "SetVertexList" (set.vertices.as_slice()) -> ());
         call!(canv, "AddChildWidget" (shape) -> ());
     }
     canv
@@ -195,7 +193,7 @@ fn render_bezier(
     ctrl2: PointN<f64, 2>,
     end: PointN<f64, 2>,
 ) -> Vec<Vector2> {
-    const BEZIER_STEPS: usize = 12;
+    const BEZIER_STEPS: usize = 32;
     let mut vertices = Vec::with_capacity(BEZIER_STEPS);
 
     let bezier = CubicBezier::new(start, ctrl1, ctrl2, end);
@@ -266,10 +264,7 @@ impl Vector2 {
 }
 
 impl IsoRED for Vector2 {
-    #[inline]
-    fn type_name() -> &'static str {
-        "Vector2"
-    }
+    const NAME: &'static str = "Vector2";
 }
 
 #[derive(Debug, Clone, Default)]
@@ -294,10 +289,7 @@ impl Color {
 }
 
 impl IsoRED for Color {
-    #[inline]
-    fn type_name() -> &'static str {
-        "HDRColor"
-    }
+    const NAME: &'static str = "HDRColor";
 }
 
 #[derive(Debug)]
@@ -316,10 +308,7 @@ impl Default for ShapeVariant {
 }
 
 impl IsoRED for ShapeVariant {
-    #[inline]
-    fn type_name() -> &'static str {
-        "inkEShapeVariant"
-    }
+    const NAME: &'static str = "inkEShapeVariant";
 }
 
 #[derive(Debug)]
@@ -338,10 +327,7 @@ impl Default for JointStyle {
 }
 
 impl IsoRED for JointStyle {
-    #[inline]
-    fn type_name() -> &'static str {
-        "inkEJointStyle"
-    }
+    const NAME: &'static str = "inkEJointStyle";
 }
 
 #[derive(Debug)]
@@ -361,8 +347,5 @@ impl Default for EndCapStyle {
 }
 
 impl IsoRED for EndCapStyle {
-    #[inline]
-    fn type_name() -> &'static str {
-        "inkEEndCapStyle"
-    }
+    const NAME: &'static str = "inkEEndCapStyle";
 }
